@@ -1,0 +1,19 @@
+#pragma once
+
+#include <string_view>
+
+namespace HyperEngine {
+
+constexpr std::string_view HYPER_VERSION = "@PROJECT_VERSION@";
+constexpr uint8_t HYPER_VERSION_MAJOR = @PROJECT_VERSION_MAJOR@;
+constexpr uint8_t HYPER_VERSION_MINOR = @PROJECT_VERSION_MINOR@;
+constexpr uint8_t HYPER_VERSION_PATCH = @PROJECT_VERSION_PATCH@;
+
+constexpr std::string_view HYPER_COMPILED_COMPILER = "@CMAKE_CXX_COMPILER@";
+constexpr std::string_view HYPER_COMPILED_SYSTEM = "@CMAKE_SYSTEM@";
+constexpr std::string_view HYPER_COMPILED_GENERATOR = "@CMAKE_GENERATOR@";
+constexpr std::string_view HYPER_BUILD_TYPE = "@CMAKE_BUILD_TYPE@";
+constexpr std::string_view HYPER_COMPILED_COMMIT_HASH = "@HYPER_GIT_COMMIT_HASH@";
+constexpr std::string_view HYPER_COMPILED_BRANCH = "@HYPER_GIT_BRANCH@";
+
+}
