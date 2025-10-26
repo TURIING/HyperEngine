@@ -7,9 +7,13 @@
 
 #include <memory>
 #include <vector>
-#include <string>
+#include <map>
 #include <unordered_map>
+#include <string>
 #include <algorithm>
+#include <typeindex>
+#include <filesystem>
+#include <functional>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -24,6 +28,7 @@
 #include "BaseDefine.h"
 #include "RefObject.h"
 #include "NoCopyable.h"
+#include "Time.hpp"
 #include "Export.hpp"
 
 #endif //COMMON_H

@@ -62,8 +62,8 @@ public:
         bool inlineArrays;
     };
 
-    static constexpr auto Beautified = Format(2, '\n', ' ', true);
-    static constexpr auto Minified = Format(0, '\0', '\0', false);
+    inline static const auto Beautified = Format(2, '\n', ' ', true);
+    inline static const auto Minified = Format(0, '\0', '\0', false);
 
     virtual ~NodeFormat() = default;
 };

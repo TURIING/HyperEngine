@@ -16,10 +16,11 @@ USING_ENGINE_NAMESPACE_BEGIN
 class ENGINE_EXPORT Engine : NoCopyable {
 public:
     NODISCARD static Engine* Instance();
-    void Init(const ModuleFilter& filter = {});
+    void Init(const std::string &argv0, const ModuleFilter& filter = {});
     void Run();
     void SetApp(std::unique_ptr<App> &&app) { m_pApp = std::move(app); }
     void RequestClose() { m_running = false; }
+    NODISCARD std::string GetArgv0() const { return m_argv0; }
 
 private:
     Engine() = default;
@@ -35,6 +36,7 @@ private:
     std::unique_ptr<App> m_pApp;
     ElapsedTime m_elapsedRender;
     ElapsedTime m_elapsedUpdate;
+    std::string m_argv0;
 };
 
 USING_ENGINE_NAMESPACE_END

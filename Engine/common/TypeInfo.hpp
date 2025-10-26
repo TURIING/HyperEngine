@@ -6,7 +6,6 @@
 #define TYPEINFO_HPP
 
 #include "Common.h"
-#include <typeindex>
 
 USING_ENGINE_NAMESPACE_BEGIN
 

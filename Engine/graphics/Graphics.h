@@ -17,6 +17,7 @@ public:
     ~Graphics() override;
 
     void Update() override;
+    NODISCARD HyperGpu::GpuDevice* GetGpuDevice() const { return m_pGpuDevice; }
 
 private:
     HyperGpu::GpuFactory* m_pGpuFactory = nullptr;

@@ -13,3 +13,9 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb
+[submodule "external/physfs"]
+	path = external/physfs
+	url = https://github.com/icculus/physfs
+[submodule "external/tinyobj"]
+	path = external/tinyobj
+	url = https://github.com/tinyobjloader/tinyobjloader

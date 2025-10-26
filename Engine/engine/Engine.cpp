@@ -12,8 +12,9 @@ Engine* Engine::Instance() {
     return &engine;
 }
 
-void Engine::Init(const ModuleFilter& filter) {
+void Engine::Init(const std::string &argv0, const ModuleFilter& filter) {
     Singleton<LogManager>::GetInstance()->Init();
+    m_argv0 = argv0;
 
     LOG_INFO("Version: {}", HYPER_VERSION);
     LOG_INFO("Git Commit: {}, on {} branch", HYPER_COMPILED_COMMIT_HASH, HYPER_COMPILED_BRANCH);

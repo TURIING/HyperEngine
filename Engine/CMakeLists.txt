@@ -4,6 +4,8 @@ set(EXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/../external)
 include_directories(${HYPER_GPU_PATH}/include ${EXTERNAL}/)
 add_subdirectory(${EXTERNAL}/HyperGpu HyperGpu)
 add_subdirectory(${EXTERNAL}/assimp assimp)
+add_subdirectory(${EXTERNAL}/physfs physfs)
+add_subdirectory(${EXTERNAL}/tinyobj tinyobjloader)
 
 file(GLOB_RECURSE SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h" "*.cpp" "*.hpp")
 add_library(${PROJECT_NAME} SHARED ${SOURCE})
@@ -15,8 +17,10 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${EXTERNAL}/glm>
         $<BUILD_INTERFACE:${EXTERNAL}/rocket>
+        $<BUILD_INTERFACE:${EXTERNAL}/physfs>
+        $<BUILD_INTERFACE:${EXTERNAL}/tinyobj>
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC HyperGpu assimp)
+target_link_libraries(${PROJECT_NAME} PUBLIC HyperGpu assimp physfs tinyobjloader)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "YES"
         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
