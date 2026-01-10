@@ -9,6 +9,7 @@
 
 #include "Common.h"
 #include "NodeFormat.hpp"
+#include "../common/String.hpp"
 
 USING_ENGINE_NAMESPACE_BEGIN
 
@@ -24,6 +25,8 @@ public:
     Node() = default;
     Node(const Node&) = default;
     Node(Node &&) = default;
+
+    NODISCARD bool IsValid() const;
 
     template<typename T, typename = std::enable_if_t<std::is_convertible_v<T*, NodeFormat*>>>
     void ParseString(std::string_view string) {
@@ -78,6 +81,20 @@ public:
         T value;
         *this >> value;
         return value;
+    }
+
+    template<typename T>
+    bool Get(T &dst) const {
+        if (!IsValid()) return false;
+        *this >> dst;
+        return true;
+    }
+
+    template<typename T>
+    bool Get(T &&dst) const {
+        if (!IsValid()) return false;
+        *this >> dst;
+        return true;
     }
 
     NodeConstView operator[](const std::string &name) const;
@@ -151,6 +168,43 @@ public:
 
     const Node &operator>>(std::string &string) const {
         string = GetValue();
+        return *this;
+    }
+
+    const Node &operator>>(std::filesystem::path &obj) const {
+        obj = GetValue();
+        return *this;
+    }
+
+    const Node &operator<<(const std::filesystem::path &obj) {
+        auto str = obj.string();
+        std::replace(str.begin(), str.end(), '\\', '/');
+        SetValue(str);
+        SetType(NodeType::String);
+        return *this;
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+    const Node &operator>>(T &object) const {
+        object = String::From<T>(GetValue());
+        return *this;
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+    Node &operator<<(T object) {
+        SetValue(String::To(object));
+        SetType(std::is_floating_point_v<T> ? NodeType::Decimal : NodeType::Integer);
+        return *this;
+    }
+
+    const Node &operator>>(bool &obj) const {
+        obj = String::From<bool>(GetValue());
+        return *this;
+    }
+
+    Node &operator<<(bool obj) {
+        SetValue(String::To(obj));
+        SetType(NodeType::Boolean);
         return *this;
     }
 

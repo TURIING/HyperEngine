@@ -9,6 +9,17 @@
 USING_ENGINE_NAMESPACE_BEGIN
 static const NodeProperty NullNode = NodeProperty("", Node() = nullptr);
 
+bool Node::IsValid() const {
+    switch (m_type) {
+        case NodeType::Token:
+        case NodeType::Unknown:     return false;
+        case NodeType::Object:
+        case NodeType::Array:       return !m_vecProperties.empty();
+        case NodeType::Null:        return true;
+        default:                    return !m_value.empty();
+    }
+}
+
 bool Node::HasProperty(const std::string &name) const {
     for (const auto &[propertyName, property]: m_vecProperties) {
         if (name == propertyName) {
@@ -154,7 +165,6 @@ inline Node &operator<<(Node &node, const std::nullptr_t &object) {
     node.SetType(NodeType::Null);
     return node;
 }
-
 
 NodeConstView Node::operator[](const std::string &name) const {
     return GetProperty(name);

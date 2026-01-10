@@ -43,6 +43,20 @@ public:
         return m_pValue->Get<T>();
     }
 
+    template<typename T>
+    bool Get(T &dst) const {
+        if (!HasValue()) return false;
+
+        return m_pValue->Get<T>(dst);
+    }
+
+    template<typename T>
+    bool Get(T &&dst) const {
+        if (!HasValue()) return false;
+
+        return m_pValue->Get<std::remove_reference_t<T>>(std::move(dst));
+    }
+
 protected:
     const Node* m_pParent = nullptr;
     const Node* m_pValue = nullptr;

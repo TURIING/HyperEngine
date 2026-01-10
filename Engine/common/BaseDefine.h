@@ -7,6 +7,15 @@
 
 /***************************************************** Types ****************************************************/
 enum class GpuType { OPENGL, VULKAN };
+enum class Filter { NEAREST, LINEAR };
+enum class AddressMode { REPEAT, MIRROR, CLAMP_TO_EDGE, CLAMP_TO_BORDER };
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+struct Size {
+    T width = 0;
+    T height = 0;
+};
+using SizeUI = Size<uint32_t>;
 
 /***************************************************** Macros ****************************************************/
 
