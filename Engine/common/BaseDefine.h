@@ -6,9 +6,14 @@
 #define BASEDEFINE_H
 
 /***************************************************** Types ****************************************************/
-enum class GpuType { OPENGL, VULKAN };
+enum class QueueType { Graphics, Transfer, Compute, Present };
 enum class Filter { NEAREST, LINEAR };
 enum class AddressMode { REPEAT, MIRROR, CLAMP_TO_EDGE, CLAMP_TO_BORDER };
+
+struct QueueInfo {
+    QueueType type     = QueueType::Graphics;
+    float     priority = 1.0f; // 队列优先级，[0.0 - 1.0]
+};
 
 template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
 struct Size {
@@ -17,6 +22,15 @@ struct Size {
 };
 using SizeUI = Size<uint32_t>;
 
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+struct Point {
+    T x = 0;
+    T y = 0;
+};
+using PointUI = Point<uint32_t>;
+
+using u32 = uint32_t;
+using i32 = int32_t;
 /***************************************************** Macros ****************************************************/
 
 #define USING_ENGINE_NAMESPACE_BEGIN namespace HyperEngine {
@@ -53,5 +67,8 @@ inline void HASH_COMBINE(size_t &seed, const T &v) {
 }
 
 #define NODISCARD [[nodiscard]]
+
+/***************************************************** Variable ****************************************************/
+constexpr const char *VK_LAYER_KHRONOS_VALIDATION = "VK_LAYER_KHRONOS_validation";
 
 #endif //BASEDEFINE_H

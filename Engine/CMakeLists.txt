@@ -1,11 +1,19 @@
-set(HYPER_GPU_PATH external/HyperGpu)
-
+add_definitions(-DPLATFORM_MACOS)
 set(EXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/../external)
-include_directories(${HYPER_GPU_PATH}/include ${EXTERNAL}/)
-add_subdirectory(${EXTERNAL}/HyperGpu HyperGpu)
+include_directories(${Vulkan_INCLUDE_DIR} ${EXTERNAL})
+
 add_subdirectory(${EXTERNAL}/assimp assimp)
 add_subdirectory(${EXTERNAL}/physfs physfs)
+add_subdirectory(${EXTERNAL}/spdlog spdlog)
+add_subdirectory(${EXTERNAL}/volk volk)
 add_subdirectory(${EXTERNAL}/tinyobj tinyobjloader)
+if(NOT glslang_FOUND)
+    set(GLSLANG_ENABLE_INSTALL ON)
+    set(ENABLE_OPT OFF)
+    add_subdirectory(${EXTERNAL}/glslang glslang)
+endif ()
+
+find_package(Vulkan REQUIRED)
 
 file(GLOB_RECURSE SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h" "*.cpp" "*.hpp")
 add_library(${PROJECT_NAME} SHARED ${SOURCE})
@@ -20,7 +28,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${EXTERNAL}/physfs>
         $<BUILD_INTERFACE:${EXTERNAL}/tinyobj>
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC HyperGpu assimp physfs tinyobjloader)
+target_link_libraries(${PROJECT_NAME} PUBLIC assimp physfs tinyobjloader spdlog::spdlog volk::volk ${Vulkan_LIBRARIES} glslang::glslang glslang::SPIRV)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "YES"
         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"

@@ -25,7 +25,6 @@ private:
     Filter m_filter;
     AddressMode m_addressMode;
     bool m_isMipmap = false;
-    HyperGpu::Image2D* m_pImage = nullptr;
 };
 
 USING_ENGINE_NAMESPACE_END
