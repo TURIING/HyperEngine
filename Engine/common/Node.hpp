@@ -10,15 +10,13 @@
 #include "Common.h"
 #include "NodeFormat.hpp"
 #include "../common/String.hpp"
+#include "NodeView.hpp"
 
 USING_ENGINE_NAMESPACE_BEGIN
 
 class Node;
 class NodeConstView;
 class NodeView;
-
-using NodeValue = std::string;
-using NodeProperty = std::pair<std::string, Node>;
 
 class ENGINE_EXPORT Node final {
 public:
@@ -29,14 +27,10 @@ public:
     NODISCARD bool IsValid() const;
 
     template<typename T, typename = std::enable_if_t<std::is_convertible_v<T*, NodeFormat*>>>
-    void ParseString(std::string_view string) {
-        T::Load(*this, string);
-    }
+    void ParseString(std::string_view string);
 
     template<typename T, typename = std::enable_if_t<std::is_convertible_v<T*, NodeFormat*>>>
-    void WriteStream(std::ostream &stream, NodeFormat::Format format = NodeFormat::Minified) const {
-        T::Write(*this, stream, format);
-    }
+    void WriteStream(std::ostream &stream, NodeFormat::Format format = NodeFormat::Minified) const;
 
     NODISCARD const NodeValue& GetValue() const { return m_value; }
     void SetValue(NodeValue value) { m_value = std::move(value); }
@@ -51,6 +45,8 @@ public:
     NODISCARD NodeConstView GetProperty(uint32_t index) const;
     NODISCARD NodeView GetProperty(const std::string &name);
     NODISCARD NodeView GetProperty(uint32_t index);
+    NODISCARD const std::vector<NodeProperty> &GetProperties() const { return m_vecProperties; }
+    NODISCARD std::vector<NodeProperty> &GetProperties() { return m_vecProperties; }
 
     Node &AddProperty(const Node &node);
     Node &AddProperty(Node &&node = {});
@@ -68,34 +64,19 @@ public:
     NODISCARD NodeView GetPropertyWithValue(const std::string &name, const NodeValue &propertyValue);
 
     template<typename T>
-    void Set(const T &value) {
-        *this << value;
-    }
-    template<typename T>
-    void Set(T &&value) {
-        *this << value;
-    }
+    void Set(const T &value);
 
     template<typename T>
-    T Get() const {
-        T value;
-        *this >> value;
-        return value;
-    }
+    void Set(T &&value);
 
     template<typename T>
-    bool Get(T &dst) const {
-        if (!IsValid()) return false;
-        *this >> dst;
-        return true;
-    }
+    T Get() const;
 
     template<typename T>
-    bool Get(T &&dst) const {
-        if (!IsValid()) return false;
-        *this >> dst;
-        return true;
-    }
+    bool Get(T &dst) const;
+
+    template<typename T>
+    bool Get(T &&dst) const;
 
     NodeConstView operator[](const std::string &name) const;
     NodeConstView operator[](uint32_t index) const;
@@ -138,75 +119,51 @@ public:
     }
 
     template<typename T>
-    Node &operator=(const T &rhs) {
-        Set(rhs);
-        return *this;
-    }
+    Node &operator=(const T &rhs);
 
-    Node &operator<<(std::string string) {
-        SetValue(std::move(string));
-        SetType(NodeType::String);
-        return *this;
-    }
+    Node &operator<<(std::string string);
 
-    const Node &operator>>(char *&string) const {
-        std::strcpy(string, GetValue().c_str());
-        return *this;
-    }
+    const Node &operator>>(char *&string) const;
 
-    Node &operator<<(const char *string) {
-        SetValue(string);
-        SetType(NodeType::String);
-        return *this;
-    }
+    Node &operator<<(const char *string);
 
-    Node &operator<<(std::string_view string) {
-        SetValue(std::string(string));
-        SetType(NodeType::String);
-        return *this;
-    }
+    Node &operator<<(std::string_view string);
 
-    const Node &operator>>(std::string &string) const {
-        string = GetValue();
-        return *this;
-    }
+    const Node &operator>>(std::string &string) const;
 
-    const Node &operator>>(std::filesystem::path &obj) const {
-        obj = GetValue();
-        return *this;
-    }
+    const Node &operator>>(std::filesystem::path &obj) const;
 
-    const Node &operator<<(const std::filesystem::path &obj) {
-        auto str = obj.string();
-        std::replace(str.begin(), str.end(), '\\', '/');
-        SetValue(str);
-        SetType(NodeType::String);
-        return *this;
-    }
+    const Node &operator<<(const std::filesystem::path &obj);
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
-    const Node &operator>>(T &object) const {
-        object = String::From<T>(GetValue());
-        return *this;
-    }
+    const Node &operator>>(T &object) const;
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
-    Node &operator<<(T object) {
-        SetValue(String::To(object));
-        SetType(std::is_floating_point_v<T> ? NodeType::Decimal : NodeType::Integer);
-        return *this;
-    }
+    Node &operator<<(T object);
 
-    const Node &operator>>(bool &obj) const {
-        obj = String::From<bool>(GetValue());
-        return *this;
-    }
+    template<typename T>
+    Node &operator<<(const VkExtent3D &extent);
 
-    Node &operator<<(bool obj) {
-        SetValue(String::To(obj));
-        SetType(NodeType::Boolean);
-        return *this;
-    }
+    template<typename T>
+    const Node &operator>>(VkExtent3D &extent) const;
+
+    template<typename T>
+    const Node &operator>>(std::vector<T> &vector) const;
+
+    template<typename T>
+    Node &operator<<(const std::vector<T> &vector);
+
+    template<typename T, typename K>
+    const Node &operator>>(std::map<T, K> &map) const;
+
+    template<typename T, typename K>
+    Node &operator<<(const std::map<T, K> &map);
+
+    template<typename T, typename K>
+    const Node &operator>>(std::pair<T, K> &pair) const;
+
+    template<typename T, typename K>
+    Node &operator<<(const std::pair<T, K> &pair);
 
 protected:
     NodeValue m_value;
@@ -215,4 +172,8 @@ protected:
 };
 
 USING_ENGINE_NAMESPACE_END
+
+#include "NodeConstView.inl"
+#include "NodeView.inl"
+#include "Node.inl"
 #endif //NODE_HPP

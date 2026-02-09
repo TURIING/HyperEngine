@@ -11,6 +11,7 @@
 USING_ENGINE_NAMESPACE_BEGIN
 
 class FileManager final: public Module::Registrar<FileManager> {
+	inline static const bool Registered = Register(Stage::Never);
 public:
     FileManager();
     ~FileManager() override;

@@ -45,6 +45,7 @@ void Engine::Run() {
             updateStage(Module::Stage::Pre);
             updateStage(Module::Stage::Normal);
             updateStage(Module::Stage::Post);
+            m_deltaUpdate.Update();
         }
 
         if (m_elapsedRender.GetElapsed() != 0) {
@@ -75,6 +76,7 @@ void Engine::createModule(const Module::RegistryMap::const_iterator it, const Mo
     }
 
     auto &&module = it->second.create();
+    module->Init();
     m_modules[it->first] = std::move(module);
     m_moduleStages[it->second.stage].emplace_back(it->first);
 }

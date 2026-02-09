@@ -40,8 +40,8 @@ std::exit(EXIT_FAILURE);
 #define LOG_INFO(...) SPDLOG_LOGGER_INFO(Singleton<LogManager>::GetInstance()->GetLogger(), fmt::format(__VA_ARGS__))
 #define LOG_WARNING(...) SPDLOG_LOGGER_WARN(Singleton<LogManager>::GetInstance()->GetLogger(), fmt::format(__VA_ARGS__))
 #define LOG_CRITICAL(...) \
-SPDLOG_LOGGER_CRITICAL(Singleton<LogManager>::GetInstance()->GetLogger(), fmt::format(__VA_ARGS__)); \
-throw std::runtime_error(fmt::format(__VA_ARGS__));
+{SPDLOG_LOGGER_CRITICAL(Singleton<LogManager>::GetInstance()->GetLogger(), fmt::format(__VA_ARGS__)); \
+throw std::runtime_error(fmt::format(__VA_ARGS__));}
 
 #define LOG_ASSERT(CONDITION) if(!(CONDITION)){ LOG_CRITICAL("Assert failed({0})", #CONDITION); }
 #define LOG_ASSERT_INFO(CONDITION, INFO) if(!(CONDITION)){ LOG_CRITICAL("Assert failed({0}): {1}", #CONDITION, INFO); }

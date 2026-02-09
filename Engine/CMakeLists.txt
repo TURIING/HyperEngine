@@ -1,12 +1,20 @@
 add_definitions(-DPLATFORM_MACOS)
+add_definitions(-DVK_USE_PLATFORM_MACOS_MVK)
 set(EXTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/../external)
 include_directories(${Vulkan_INCLUDE_DIR} ${EXTERNAL})
+
+foreach(_glfw3_option "GLFW_BUILD_TESTS" "GLFW_BUILD_EXAMPLES" "GLFW_BUILD_DOCS" "GLFW_INSTALL")
+    set(${_glfw3_option} OFF CACHE INTERNAL "")
+endforeach()
 
 add_subdirectory(${EXTERNAL}/assimp assimp)
 add_subdirectory(${EXTERNAL}/physfs physfs)
 add_subdirectory(${EXTERNAL}/spdlog spdlog)
 add_subdirectory(${EXTERNAL}/volk volk)
 add_subdirectory(${EXTERNAL}/tinyobj tinyobjloader)
+add_subdirectory(${EXTERNAL}/vma vma)
+add_subdirectory(${EXTERNAL}/glfw glfw)
+
 if(NOT glslang_FOUND)
     set(GLSLANG_ENABLE_INSTALL ON)
     set(ENABLE_OPT OFF)
@@ -15,7 +23,7 @@ endif ()
 
 find_package(Vulkan REQUIRED)
 
-file(GLOB_RECURSE SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h" "*.cpp" "*.hpp")
+file(GLOB_RECURSE SOURCE RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h" "*.cpp" "*.hpp" "*.inl")
 add_library(${PROJECT_NAME} SHARED ${SOURCE})
 
 target_include_directories(${PROJECT_NAME}
@@ -27,8 +35,21 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${EXTERNAL}/rocket>
         $<BUILD_INTERFACE:${EXTERNAL}/physfs>
         $<BUILD_INTERFACE:${EXTERNAL}/tinyobj>
+        $<BUILD_INTERFACE:${EXTERNAL}/glfw>
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC assimp physfs tinyobjloader spdlog::spdlog volk::volk ${Vulkan_LIBRARIES} glslang::glslang glslang::SPIRV)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+        assimp
+        physfs
+        tinyobjloader
+        spdlog::spdlog
+        volk::volk
+        ${Vulkan_LIBRARIES}
+        glslang::glslang
+        glslang::SPIRV
+        glfw
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "YES"
         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"

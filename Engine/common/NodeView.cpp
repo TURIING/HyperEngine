@@ -3,6 +3,7 @@
 //
 
 #include "NodeView.hpp"
+#include "Node.hpp"
 
 USING_ENGINE_NAMESPACE_BEGIN
 NodeView::NodeView(Node *parent, Key key, Node *value): NodeConstView(parent, std::move(key), value) {}

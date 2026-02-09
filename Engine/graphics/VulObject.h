@@ -8,12 +8,11 @@
 #ifndef VULOBJECT_H
 #define VULOBJECT_H
 
-#include "../common/RefObject.h"
-
 namespace HyperEngine {
 template <class T>
-class VulObject : public RefObject {
+class VulObject {
 public:
+    virtual ~VulObject() = default;
     [[nodiscard]] T GetHandle() const { return m_pHandle; }
 
 protected:

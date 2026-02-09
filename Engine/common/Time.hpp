@@ -186,5 +186,15 @@ constexpr Time &Time::operator/=(float rhs) {
 constexpr Time &Time::operator/=(int64_t rhs) {
 	return *this = *this / rhs;
 }
+
+struct TimeDelta {
+    Time lastFrameTime;
+    Time delta;
+    void Update() {
+        auto current = Time::Now();
+        delta = current - lastFrameTime;
+        lastFrameTime = current;
+    }
+};
 USING_ENGINE_NAMESPACE_END
 #endif //TIME_HPP

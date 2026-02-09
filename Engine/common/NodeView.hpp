@@ -7,7 +7,6 @@
 
 #include "Common.h"
 #include "NodeConstView.hpp"
-#include "Node.hpp"
 
 USING_ENGINE_NAMESPACE_BEGIN
 
@@ -27,27 +26,19 @@ public:
     Node *operator->() { return Get(); }
 
     template<typename T>
-    void Set(const T &value) {
-        Get()->Set<T>(value);
-    }
+    void Set(const T &value);
 
     template<typename T>
-    void Set(T &&value) {
-        Get()->Set<std::remove_reference_t<T>>(std::move(value));
-    }
+    void Set(T &&value);
 
     NODISCARD NodeView GetPropertyWithBackup(const std::string &key, const std::string &backupKey);
     NODISCARD NodeView GetPropertyWithValue(const std::string &key, const NodeValue &propertyValue);
 
     template<typename T>
-    Node &operator=(const T &rhs) {
-        return *Get() = rhs;
-    }
+    Node &operator=(const T &rhs);
 
     template<typename T>
-    Node &operator=(T &&rhs) {
-        return *Get() = std::move(rhs);
-    }
+    Node &operator=(T &&rhs);
 };
 
 USING_ENGINE_NAMESPACE_END

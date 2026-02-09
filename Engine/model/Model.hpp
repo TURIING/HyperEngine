@@ -9,6 +9,9 @@
 #include "ModelFactory.hpp"
 #include "../resource/Resource.h"
 #include "../graphics/Graphics.h"
+#include "../graphics/resource/buffer/Buffer.h"
+#include "../graphics/command/CmdManager.h"
+#include "../graphics/command/CommandBuffer.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
 
@@ -33,14 +36,44 @@ public:
         initialize<T>(vertices, indices);
     }
 
+	void SetIndices(const std::vector<uint32_t> &indices);
     NODISCARD std::type_index GetTypeIndex() const override { return typeid(Model); }
+    void Render(CommandBuffer* pCmd) const;
 
 protected:
     template<typename T>
     void initialize(const std::vector<T> &vertices, const std::vector<uint32_t> &indices = {}) {
+        SetVertices(vertices);
+        SetIndices(indices);
+    }
+
+    template<typename T>
+    void SetVertices(const std::vector<T> &vertices) {
+        LOG_ASSERT(!vertices.empty());
+        const auto size = sizeof(T) * vertices.size();
+        m_vertexCount = vertices.size();
+        m_pVertexBuffer = std::make_unique<Buffer>(
+            size,
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
+        Buffer stageBuffer(
+            size,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        );
+        stageBuffer.WriteData(0, size, vertices.data());
+
+        Graphics::Get()->GetCmdManager()->WithSingleCmdBuffer([&](CommandBuffer *pCmd) {
+            pCmd->CopyBuffer(&stageBuffer, m_pVertexBuffer.get(), size);
+        });
     }
 
 private:
+    u32 m_vertexCount = 0;
+    u32 m_indexCount = 0;
+    Unique<Buffer> m_pVertexBuffer;
+    Unique<Buffer> m_pIndexBuffer;
 };
 
 USING_ENGINE_NAMESPACE_END

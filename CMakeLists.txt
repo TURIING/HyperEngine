@@ -7,6 +7,10 @@ set(HYPER_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/Resources)
 
 option(BUILD_TEST "Option to build tests" ON)
 
+if(APPLE)
+    enable_language(OBJC)
+endif()
+
 execute_process(
         COMMAND git rev-parse --abbrev-ref HEAD
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

@@ -10,12 +10,14 @@
 #include "../common/ElapsedTime.hpp"
 #include "../common/Node.hpp"
 #include "Resource.h"
+#include "../file/FileManager.h"
+
 USING_ENGINE_NAMESPACE_BEGIN
 
 using ResourceCollectType = std::unordered_map<std::type_index, std::map<Node, std::shared_ptr<Resource>>>;
 
 class ENGINE_EXPORT ResourceManager : public Module::Registrar<ResourceManager> {
-	inline static const bool Registered = Register(Stage::Post);
+	inline static const bool Registered = Register(Stage::Post, Requires<FileManager>());
 public:
     ResourceManager();
 

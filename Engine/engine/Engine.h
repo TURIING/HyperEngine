@@ -21,6 +21,7 @@ public:
     void SetApp(std::unique_ptr<App> &&app) { m_pApp = std::move(app); }
     void RequestClose() { m_running = false; }
     NODISCARD std::string GetArgv0() const { return m_argv0; }
+    NODISCARD const Time& GetDeltaTime() const { return m_deltaUpdate.delta; }
 
 private:
     Engine() = default;
@@ -36,6 +37,7 @@ private:
     std::unique_ptr<App> m_pApp;
     ElapsedTime m_elapsedRender;
     ElapsedTime m_elapsedUpdate;
+    TimeDelta m_deltaUpdate;
     std::string m_argv0;
 };
 

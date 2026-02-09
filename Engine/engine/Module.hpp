@@ -48,7 +48,7 @@ public:
             }
         }
 
-        static T* Instance() {
+        static T* Get() {
             return moduleInstance;
         }
 
@@ -79,6 +79,7 @@ public:
     using StageIndex = std::pair<Stage, TypeId>;
 
     virtual void Update() = 0;
+    virtual void Init() {}
 };
 template class ENGINE_EXPORT TypeInfo<Module>;
 

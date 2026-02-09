@@ -14,23 +14,24 @@ class Bitmap: public BitmapFactory<Bitmap> {
 public:
     Bitmap() = default;
     explicit Bitmap(std::filesystem::path filename);
-    explicit Bitmap(const SizeUI &size, uint32_t bytesPerPixel = 4);
-    Bitmap(std::unique_ptr<uint8_t[]> &&data, const SizeUI &size, uint32_t bytesPerPixel = 4);
+    explicit Bitmap(const Size2DUI &size, uint32_t bytesPerPixel = 4);
+    explicit Bitmap(std::unique_ptr<uint8_t[]> &&data, const Size2DUI &size, uint32_t bytesPerPixel = 4);
 
     void Load(const std::filesystem::path &filename);
     void Write(const std::filesystem::path &filename) const;
 
     NODISCARD uint32_t GetLength() const { return m_size.width * m_size.height * m_bytesPerPixel; }
-    NODISCARD SizeUI GetSize() const { return m_size; }
+    NODISCARD Size2DUI GetSize() const { return m_size; }
     NODISCARD uint32_t GetBytesPerPixel() const { return m_bytesPerPixel; }
+    NODISCARD const void* GetData() const { return m_data.get(); }
 
-    void SetSize(const SizeUI &size) { m_size = size; }
+    void SetSize(const Size2DUI &size) { m_size = size; }
     void SetBytesPerPixel(uint32_t bytesPerPixel) { m_bytesPerPixel = bytesPerPixel; }
 
 private:
     std::filesystem::path m_filename;
     std::unique_ptr<uint8_t[]> m_data;
-    SizeUI m_size;
+    Size2DUI m_size;
     uint32_t m_bytesPerPixel = 0;
 };
 

@@ -15,13 +15,13 @@ Bitmap::Bitmap(std::filesystem::path filename): m_filename(std::move(filename)) 
     Load(m_filename);
 }
 
-Bitmap::Bitmap(const SizeUI &size, uint32_t bytesPerPixel):
+Bitmap::Bitmap(const Size2DUI &size, uint32_t bytesPerPixel):
     m_data(std::make_unique<uint8_t[]>(size.width * size.height * bytesPerPixel)),
     m_size(size),
     m_bytesPerPixel(bytesPerPixel) {
 }
 
-Bitmap::Bitmap(std::unique_ptr<uint8_t[]> &&data, const SizeUI &size, uint32_t bytesPerPixel):
+Bitmap::Bitmap(std::unique_ptr<uint8_t[]> &&data, const Size2DUI &size, uint32_t bytesPerPixel):
     m_data(std::move(data)),
     m_size(size),
     m_bytesPerPixel(bytesPerPixel) {

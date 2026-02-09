@@ -12,15 +12,40 @@ USING_ENGINE_NAMESPACE_BEGIN
 
 class Window : NoCopyable {
 public:
-    Window(std::size_t id);
+    Window(std::string_view name);
     ~Window() override;
+    void Update();
+    NODISCARD Size2DUI GetSize() const { return m_size * m_scale; }
+    NODISCARD std::string_view GetName() const { return m_windowName; }
+    NODISCARD rocket::signal<void(glm::vec2)> &OnMouseMove() { return m_sigOnMouseMove; }
+    NODISCARD rocket::signal<void(glm::vec2)> &OnMouseScroll() { return m_sigOnMouseScroll; }
+    NODISCARD rocket::signal<void(glm::vec2)> &OnResize() { return m_sigOnReSize; }
+    NODISCARD rocket::signal<void(glm::vec2)> &OnWindowMove() { return m_sigOnWindowMove; }
+    NODISCARD rocket::signal<void()> &OnWindowClose() { return m_sigOnWindowClose; }
+    NODISCARD const void *GetNativeHandle() const;
+    VkResult CreateSurface(VkInstance instance, VkSurfaceKHR *surface);
 
 private:
-    std::size_t m_id = 0;
+    friend void CallbackWindowMove(GLFWwindow *pWindow, int32_t xPos, int32_t yPos);
+    friend void CallbackWindowReSize(GLFWwindow *pWindow, int32_t width, int32_t height);
+    friend void CallbackWindowClose(GLFWwindow *pWindow);
+    friend void CallbackCursorPos(GLFWwindow *pWindow, double xPos, double yPos);
+    friend void CallbackCursorScroll(GLFWwindow *pWindow, double xOffset, double yOffset);
+
+private:
+    std::string_view m_windowName;
     GLFWwindow *m_pWindow = nullptr;
-    SizeUI m_size = { 1200, 1000 };
-    PointUI m_position;
-    std::string m_title = "HyperEngine";
+    Size2DUI m_size = { 1200, 1000 };
+    glm::vec2 m_position;
+    std::string m_title;
+    glm::vec2 m_scale;
+
+    glm::vec2 m_mousePos;
+    glm::vec2 m_mouseLastPos;
+    glm::vec2 m_mouseDeltaPos;
+    glm::vec2 m_mouseScroll;
+    glm::vec2 m_mouseLastScroll;
+    glm::vec2 m_mouseDeltaScroll;
 
     bool m_resizable = true;
     bool m_floating = false;
@@ -28,6 +53,12 @@ private:
     bool m_closed = false;
     bool m_focused = true;
     bool m_cursorHidden = false;
+
+    rocket::signal<void(glm::vec2)> m_sigOnMouseMove;
+    rocket::signal<void(glm::vec2)> m_sigOnMouseScroll;
+    rocket::signal<void(glm::vec2)> m_sigOnReSize;
+    rocket::signal<void(glm::vec2)> m_sigOnWindowMove;
+    rocket::signal<void()> m_sigOnWindowClose;
 };
 
 

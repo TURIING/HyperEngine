@@ -41,12 +41,12 @@ private:
 };
 
 std::shared_ptr<ObjModel> ObjModel::Create(const Node &node) {
-    if (auto resource = ResourceManager::Instance()->Find<ObjModel>(node)) {
+    if (auto resource = ResourceManager::Get()->Find<ObjModel>(node)) {
         return resource;
     }
 
     auto result = std::make_shared<ObjModel>("");
-    ResourceManager::Instance()->Add(node, result);
+    ResourceManager::Get()->Add(node, result);
     node >> *result;
     result->load();
     return result;

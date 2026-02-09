@@ -6,9 +6,11 @@
 #define NODECONSTVIEW_HPP
 
 #include "Common.h"
-#include "Node.hpp"
 
 USING_ENGINE_NAMESPACE_BEGIN
+class Node;
+using NodeValue = std::string;
+using NodeProperty = std::pair<std::string, Node>;
 
 class ENGINE_EXPORT NodeConstView {
     friend class Node;
@@ -28,34 +30,16 @@ public:
     const Node& operator*() const { return *m_pValue; }
     const Node* operator->() const { return m_pValue; }
 
-    NODISCARD NodeConstView GetPropertyWithBackup(const std::string &key, const std::string &backupKey) const {
-        if (!HasValue()) {
-            return { this, key };
-        }
-        return m_pValue->GetPropertyWithBackup(key, backupKey);
-    }
+    NODISCARD NodeConstView GetPropertyWithBackup(const std::string &key, const std::string &backupKey) const;
 
     template<typename T>
-    T Get() const {
-        if (!HasValue())
-            return {};
-
-        return m_pValue->Get<T>();
-    }
+    T Get() const;
 
     template<typename T>
-    bool Get(T &dst) const {
-        if (!HasValue()) return false;
-
-        return m_pValue->Get<T>(dst);
-    }
+    bool Get(T &dst) const;
 
     template<typename T>
-    bool Get(T &&dst) const {
-        if (!HasValue()) return false;
-
-        return m_pValue->Get<std::remove_reference_t<T>>(std::move(dst));
-    }
+    bool Get(T &&dst) const;
 
 protected:
     const Node* m_pParent = nullptr;
