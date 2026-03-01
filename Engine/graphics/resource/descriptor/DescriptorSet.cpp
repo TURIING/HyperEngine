@@ -11,7 +11,7 @@
 #include "DescriptorSetLayout.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
-    DescriptorSet::DescriptorSet(Pipeline *pPipeline)
+DescriptorSet::DescriptorSet(Pipeline *pPipeline)
     :m_pipelineLayout(pPipeline->GetPipelineLayout()->GetHandle()),
      m_pipelineBindPoint(pPipeline->GetBindPoint()),
      m_descriptorPool(Graphics::Get()->GetDescriptorPool()->GetHandle()) {

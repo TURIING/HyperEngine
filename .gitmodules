@@ -1,6 +1,3 @@
-[submodule "external/HyperGpu"]
-	path = external/HyperGpu
-	url = https://github.com/TURIING/HyperGpu
 [submodule "external/entt"]
 	path = external/entt
 	url = https://github.com/skypjack/entt

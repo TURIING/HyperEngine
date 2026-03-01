@@ -141,7 +141,7 @@ void CommandBuffer::SetScissor(const Scissor &scissor) {
     vkCmdSetScissor(m_pHandle, 0, 1, &sc);
 }
 
-void CommandBuffer::CopyBufferToImage(const Share<Buffer> &pBuffer, const Share<Image> &pImage, const Area2D &area) const {
+void CommandBuffer::CopyBufferToImage(Buffer* pBuffer, Image* pImage, const Area2D &area) const {
     TransitionImageLayout(pImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     const VkBufferImageCopy region = {
@@ -175,12 +175,6 @@ void CommandBuffer::CopyBufferToImage(const Share<Buffer> &pBuffer, const Share<
     }
 }
 
-void CommandBuffer::CopyBufferToImage(const void *pData, uint64_t size, const Share<Image> &pImage, const Area2D &area) const {
-    auto buffer = std::make_shared<Buffer>(size);
-    buffer->WriteData(0, size, pData);
-    CopyBufferToImage(buffer, pImage, area);
-}
-
 void CommandBuffer::CopyBuffer(Buffer *pSrcBuffer, Buffer *pDstBuffer, uint64_t size, uint64_t srcOffset, uint64_t dstOffset) const {
     VkBufferCopy region;
     region.size = size;
@@ -209,7 +203,7 @@ void CommandBuffer::ClearColorImage(const Share<Image> &pImage, const VkClearCol
  * @param baseMipLevel 指定起始 mipmap 层级
  * @param levelCount 指定要操作的 mipmap 层数量
  */
-void CommandBuffer::TransitionImageLayout(const Share<Image> &pImage, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, u32 baseMipLevel, u32 levelCount) const {
+void CommandBuffer::TransitionImageLayout(Image* pImage, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, u32 baseMipLevel, u32 levelCount) const {
     const auto currentLayout = pImage->GetCurrentImageLayout();
     if (currentLayout == newLayout) return;
 

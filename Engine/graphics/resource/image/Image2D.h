@@ -17,7 +17,7 @@ struct Image2DCreateInfo {
     PixelFormat format = PixelFormat::R8G8B8A8_SRGB;
     Filter filter = Filter::LINEAR;
     AddressMode addressMode = AddressMode::REPEAT;
-    u32 mipLevel = 0;
+    u32 mipLevel = 1;
     ImageUsageFlags usages = ImageUsageFlags::SAMPLED | ImageUsageFlags::TRANS_SRC | ImageUsageFlags::TRANS_DST | ImageUsageFlags::COLOR_ATTACHMENT;
     SampleCountFlags samples = SampleCountFlags::SAMPLE_COUNT_1_BIT;
 };
@@ -26,7 +26,8 @@ class Image2D : public Resource, public Image {
     friend class SwapChain;
 public:
     NODISCARD std::type_index GetTypeIndex() const override;
-    static Share<Image2D> Create(const Image2DCreateInfo &image2DInfo);
+    static Image2D* Create(const Image2DCreateInfo &image2DInfo);
+    static Image2D* Create(std::filesystem::path path);
 
 protected:
     Image2D(const std::filesystem::path &fileName, const ImageCreateInfo &info);

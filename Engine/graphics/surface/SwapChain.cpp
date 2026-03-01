@@ -149,7 +149,7 @@ void SwapChain::createSwapChainImages() {
 		};
 		m_vecSwapChainImages.emplace_back(new Image2D(image, info));
 	    Graphics::Get()->GetCmdManager()->WithSingleCmdBuffer([&](CommandBuffer* pCmd) {
-	        pCmd->TransitionImageLayout(m_vecSwapChainImages.back(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	        pCmd->TransitionImageLayout(m_vecSwapChainImages.back().get(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	    });
 	}
 }

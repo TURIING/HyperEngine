@@ -27,6 +27,7 @@ void DescriptorHandler::Update() {
         writeDescriptorSet.dstSet = m_pDescriptorSet->GetHandle();
         m_vecWriteDescriptorSet.emplace_back(writeDescriptorSet);
     }
+    DescriptorSet::Update(m_vecWriteDescriptorSet);
 
     m_changed = false;
 }
@@ -39,6 +40,7 @@ void DescriptorHandler::BindPipeline(Pipeline *pipeline) {
     if (const auto pShader = pipeline->GetShader(); pShader != m_pShader) {
         m_pPipeline = pipeline;
         m_pShader = pShader;
+        m_pDescriptorSet = std::make_unique<DescriptorSet>(pipeline);
         m_mapNameToDescriptorValue.clear();
         m_vecWriteDescriptorSet.clear();
         m_changed = false;

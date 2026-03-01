@@ -10,13 +10,14 @@
 #include "../../../resource/bitmap/Bitmap.h"
 #include "graphics/command/CmdManager.h"
 #include "graphics/command/CommandBuffer.h"
+#include "../buffer/Buffer.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
 std::type_index Image2D::GetTypeIndex() const {
     return typeid(Image2D);
 }
 
-Share<Image2D> Image2D::Create(const Image2DCreateInfo &image2DInfo) {
+Image2D* Image2D::Create(const Image2DCreateInfo &image2DInfo) {
     Unique<Bitmap> bitmap;
     Size2DUI size;
     if (!image2DInfo.file.empty()) {
@@ -28,20 +29,29 @@ Share<Image2D> Image2D::Create(const Image2DCreateInfo &image2DInfo) {
     info.mipLevels = image2DInfo.mipLevel;
     info.format = gPixelFormatToVkFormat[TO_U32(image2DInfo.format)];
     info.usage = static_cast<VkImageUsageFlags>(image2DInfo.usages);
-    info.extent = { size.width, size.height, 0 };
+    info.extent = { size.width, size.height, 1 };
     info.samples = static_cast<VkSampleCountFlagBits>(image2DInfo.samples);
     info.filter = image2DInfo.filter;
     info.samplerAddressMode = image2DInfo.addressMode;
     info.name = image2DInfo.name;
 
-    auto temp = std::shared_ptr<Image2D>(new Image2D(image2DInfo.file, info));
+    auto temp = new Image2D(image2DInfo.file, info);
 
     if (bitmap) {
+        const auto dataSize = bitmap->GetLength();
+        auto buffer = std::make_unique<Buffer>(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+        buffer->WriteData(0, dataSize, bitmap->GetData());
         Graphics::Get()->GetCmdManager()->WithSingleCmdBuffer([&](CommandBuffer *pCmd) {
-            pCmd->CopyBufferToImage(bitmap->GetData(), bitmap->GetLength(), temp, { {0, 0}, size});
+            pCmd->CopyBufferToImage(buffer.get(), temp, { {0, 0}, size});
         });
     }
     return temp;
+}
+
+Image2D* Image2D::Create(std::filesystem::path path) {
+    Image2DCreateInfo info{};
+    info.file = std::move(path);
+    return Create(info);
 }
 
 Image2D::Image2D(const std::filesystem::path &fileName, const ImageCreateInfo &info): Image(info), m_filename(fileName), m_info(info) {}
