@@ -14,7 +14,7 @@ class DescriptorSetLayout;
 
 class PipelineLayout: public VulObject<VkPipelineLayout> {
 public:
-    explicit PipelineLayout(Share<DescriptorSetLayout> descriptorSetLayout, const std::vector<VkPushConstantRange> &pushConstantRanges = {});
+    explicit PipelineLayout(DescriptorSetLayout* descriptorSetLayout, const std::vector<VkPushConstantRange> &pushConstantRanges = {});
     ~PipelineLayout() override;
 };
 

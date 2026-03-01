@@ -3,6 +3,8 @@
 //
 
 #include "Image.h"
+
+#include "Sampler.h"
 #include "../../Graphics.h"
 #include "../../device/LogicDevice.h"
 #include "../../device/PhysicalDevice.h"
@@ -64,8 +66,21 @@ Image::~Image() {
     vkDestroyImageView(m_pLogicDevice->GetHandle(), m_imageView, nullptr);
 }
 
-WriteDescriptorSet Image::GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType,
-    const std::optional<OffsetSize> &offsetSize) const {
+WriteDescriptorSet Image::GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType) const {
+    VkDescriptorImageInfo imageInfo {};
+    imageInfo.sampler = m_pSampler->GetHandle();
+    imageInfo.imageView = m_imageView;
+    imageInfo.imageLayout = m_currentLayout;
+
+    VkWriteDescriptorSet descriptorWrite = {};
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = VK_NULL_HANDLE; // Will be set in the descriptor handler.
+    descriptorWrite.dstBinding = binding;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.descriptorType = descriptorType;
+
+    return { descriptorWrite, imageInfo };
 }
 
 void Image::createImage() {

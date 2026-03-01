@@ -43,5 +43,6 @@
 #include "Export.hpp"
 #include "Utility.h"
 #include "TypeInfo.hpp"
+#include "String.hpp"
 
 #endif //COMMON_H

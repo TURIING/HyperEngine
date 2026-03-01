@@ -17,64 +17,60 @@ class CommandBuffer;
 class DescriptorHandler {
 public:
     DescriptorHandler() = default;
-    explicit DescriptorHandler(Pipeline* pPipeline);
     ~DescriptorHandler();
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<Descriptor, T>>>
     void Push(const std::string &descriptorName, T *descriptor, const std::optional<OffsetSize> &offsetSize = std::nullopt) {
-        if (!m_pShader) return;
-        auto it = m_mapDescriptor.find(descriptorName);
-        if (it != m_mapDescriptor.end()) {
-            if (it->second.pDescriptor == std::to_address(descriptor) && it->second.offsetSize == offsetSize) {
+        LOG_ASSERT(m_pShader);
+        LOG_ASSERT(std::to_address(descriptor));
+
+        if (auto it = m_mapNameToDescriptorValue.find(descriptorName); it != m_mapNameToDescriptorValue.end()) {
+            if (it->second.pDescriptor == std::to_address(descriptor)) {
                 return;
             }
-            m_mapDescriptor.erase(it);
+            m_mapNameToDescriptorValue.erase(it);
         }
-
-        if (!to_address(descriptor)) return;
 
         auto location = m_pShader->GetDescriptorLocation(descriptorName);
-        if (!location) {
-            return;
-        }
+        LOG_ASSERT(location);
 
-        auto descriptorType = m_pShader->GetDescriptorType(*location);
-        if (!descriptorType) return;
+        auto descriptorType = m_pShader->GetDescriptorType(descriptorName);
+        LOG_ASSERT(descriptorType);
 
-        auto writeDescriptor = descriptor->GetWriteDescriptorSet(*location, *descriptorType, offsetSize);
-        m_mapDescriptor.emplace(descriptorName, DescriptorValue{ to_address(descriptor), std::move(writeDescriptor), offsetSize, *location });
+        auto writeDescriptor = descriptor->GetWriteDescriptorSet(*location, *descriptorType);
+        m_mapNameToDescriptorValue.emplace(descriptorName, DescriptorValue{ std::to_address(descriptor), std::move(writeDescriptor) });
         m_changed = true;
     }
 
     template<typename T>
     void Push(const std::string &descriptorName, const T &descriptor, WriteDescriptorSet writeDescriptorSet) {
-        if (!m_pShader) return;
-        if (auto it = m_mapDescriptor.find(descriptorName); it != m_mapDescriptor.end()) {
-            m_mapDescriptor.erase(it);
+        LOG_ASSERT(m_pShader);
+
+        if (auto it = m_mapNameToDescriptorValue.find(descriptorName); it != m_mapNameToDescriptorValue.end()) {
+            m_mapNameToDescriptorValue.erase(it);
         }
 
         auto location = m_pShader->GetDescriptorLocation(descriptorName);
-        m_mapDescriptor.emplace(descriptorName, DescriptorValue{ to_address(descriptor), std::move(writeDescriptorSet), *location });
+        m_mapNameToDescriptorValue.emplace(descriptorName, DescriptorValue{ std::to_address(descriptor), std::move(writeDescriptorSet) });
         m_changed = true;
     }
 
     void Push(const std::string &descriptorName, UniformHandler &uniformHandler, const std::optional<OffsetSize> &offsetSize = std::nullopt);
-    bool Update(Pipeline* pPipeline);
-    void BindDescriptor(CommandBuffer* pCommandBuffer, Pipeline* pPipeline) const;
+    void Update();
+    void BindDescriptor(const CommandBuffer* pCommandBuffer) const;
+    void BindPipeline(Pipeline* pipeline);
 
 private:
-    class DescriptorValue {
-    public:
+    struct DescriptorValue {
         const Descriptor* pDescriptor = nullptr;
         WriteDescriptorSet writeDescriptor;
-        std::optional<OffsetSize> offsetSize;
-        uint32_t location;
     };
+
     const Shader* m_pShader = nullptr;
+    const Pipeline* m_pPipeline = nullptr;
     Unique<DescriptorSet> m_pDescriptorSet = nullptr;
-    std::map<std::string, DescriptorValue> m_mapDescriptor;
+    std::map<std::string, DescriptorValue> m_mapNameToDescriptorValue;
     std::vector<VkWriteDescriptorSet> m_vecWriteDescriptorSet;
-    bool m_pushDescriptors = false;
     bool m_changed = false;
 };
 

@@ -83,7 +83,7 @@ Graphics::~Graphics() {
 
 void Graphics::Init() {
     m_pCmdManager = std::make_shared<CmdManager>();
-    m_pDescriptorPool = std::make_shared<DescriptorPool>();
+    m_pDescriptorPool = std::make_unique<DescriptorPool>();
     m_pResourceCache = std::make_shared<ResourceCache>();
     m_pPresentManager = std::make_shared<PresentManager>();
     m_pSubmitQueue = std::make_unique<Queue>(m_pPhysicalDevice->GetQueueFamily(QueueType::Graphics));

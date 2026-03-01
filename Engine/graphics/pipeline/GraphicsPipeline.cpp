@@ -7,18 +7,15 @@
 #include "../Graphics.h"
 #include "graphics/device/LogicDevice.h"
 #include "Shader.h"
-#include "../resource/descriptor/DescriptorSetLayout.h"
 #include "PipelineLayout.h"
 #include "RenderPass.h"
 #include "RenderStage.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
 
-GraphicsPipeline::GraphicsPipeline(const RenderEnvInfo &renderEnvInfo): Pipeline(), m_stage(renderEnvInfo.stage) {
-	m_pShader = std::make_shared<Shader>(renderEnvInfo.shaders, renderEnvInfo.defines);
-	m_pDescriptorSetLayout = std::make_shared<DescriptorSetLayout>(m_pShader->GetDescriptorSetLayoutBindings());
-	m_pPipelineLayout = std::make_unique<PipelineLayout>(m_pDescriptorSetLayout, m_pShader->GetPushConstantRanges());
-
+GraphicsPipeline::GraphicsPipeline(const RenderEnvInfo &renderEnvInfo):
+    Pipeline(renderEnvInfo.shaders, renderEnvInfo.defines),
+    m_stage(renderEnvInfo.stage) {
     auto renderStage = Graphics::Get()->GetRenderStage(m_stage.renderStageIndex);
     std::vector<BlendInfo> vecBlendInfo;
     for (auto &attachment: renderStage->GetAttachments()) {
@@ -49,7 +46,7 @@ GraphicsPipeline::GraphicsPipeline(const RenderEnvInfo &renderEnvInfo): Pipeline
     PipelineCreateInfo info;
     info.type = PipelineType::Graphic;
     info.graphicPipelineState = &state;
-    Create(info);
+    create(info);
 }
 
 GraphicsPipeline::~GraphicsPipeline() {

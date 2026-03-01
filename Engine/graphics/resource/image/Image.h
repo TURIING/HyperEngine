@@ -39,7 +39,7 @@ public:
     NODISCARD VkImageView GetImageView() const { return m_imageView; }
     void SetCurrentImageLayout(VkImageLayout layout) { m_currentLayout = layout; }
 
-    NODISCARD WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType, const std::optional<OffsetSize> &offsetSize) const override;
+    NODISCARD WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType) const override;
 
 protected:
     void createImage();

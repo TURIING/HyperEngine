@@ -13,17 +13,11 @@ void UniformBuffer::Update(const void *pNewData) const {
     WriteData(0, m_size, pNewData);
 }
 
-WriteDescriptorSet UniformBuffer::GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType,
-    const std::optional<OffsetSize> &offsetSize) const {
+WriteDescriptorSet UniformBuffer::GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType) const {
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = m_pHandle;
     bufferInfo.offset = 0;
     bufferInfo.range = m_size;
-
-    if (offsetSize) {
-        bufferInfo.offset = offsetSize->GetOffset();
-        bufferInfo.range = offsetSize->GetSize();
-    }
 
     VkWriteDescriptorSet descriptorWrite = {};
     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

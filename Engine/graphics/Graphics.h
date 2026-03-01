@@ -40,6 +40,7 @@ public:
     NODISCARD const Share<ResourceCache> &GetResourceCache() const { return m_pResourceCache; }
     NODISCARD RenderStage* GetRenderStage(u32 stageIndex) const;
     NODISCARD const Share<PresentManager> &GetPresentManager() const { return m_pPresentManager; }
+    NODISCARD DescriptorPool* GetDescriptorPool() const { return m_pDescriptorPool.get(); }
 
 private:
     void createPipelineCache();
@@ -51,7 +52,7 @@ private:
     Share<LogicDevice> m_pLogicDevice = nullptr;
     VkPipelineCache m_pPipelineCache = VK_NULL_HANDLE;
     Share<CmdManager> m_pCmdManager;
-    Share<DescriptorPool> m_pDescriptorPool;
+    Unique<DescriptorPool> m_pDescriptorPool;
     Share<ResourceCache> m_pResourceCache;
     Unique<Renderer> m_pMainRenderer;
     Share<PresentManager> m_pPresentManager;

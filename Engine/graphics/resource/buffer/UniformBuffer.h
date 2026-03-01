@@ -15,7 +15,7 @@ class UniformBuffer: public Descriptor, public Buffer {
 public:
     explicit UniformBuffer(VkDeviceSize size, const void *pData = nullptr);
     void Update(const void *pNewData) const;
-    NODISCARD WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType, const std::optional<OffsetSize> &offsetSize) const override;
+    NODISCARD WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType) const override;
     static VkDescriptorSetLayoutBinding GetDescriptorSetLayout(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stage, uint32_t count);
 };
 

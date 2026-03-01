@@ -3,6 +3,8 @@
 //
 
 #include "Shader.h"
+
+#include <ranges>
 #include <SPIRV/GlslangToSpv.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/Include/Types.h>
@@ -217,8 +219,8 @@ constexpr VkDescriptorType gUniformTypeToVkType[] = {
 	VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 };
 
-Shader::Shader(const std::vector<std::filesystem::path> &files, const std::vector<Define> &defines) {
-	const auto defineStr = packDefineString(defines);
+Shader::Shader(const std::vector<std::filesystem::path> &files, const std::optional<std::vector<Define>> &defines) {
+	const auto defineStr = defines ? packDefineString(*defines) : std::string();
 
 	for (const auto &path : files) {
 		const auto codeStr = FileManager::ReadFile(path);
@@ -235,51 +237,28 @@ Shader::Shader(const std::vector<std::filesystem::path> &files, const std::vecto
 	createDescriptorSetLayoutBindings();
 }
 
-bool Shader::ReportedNotFound(const std::string &name, bool reportIfFound) const {
-	if (std::find(m_notFoundNames.begin(), m_notFoundNames.end(), name) == m_notFoundNames.end()) {
-		if (reportIfFound) {
-			m_notFoundNames.emplace_back(name);
-		}
-		return true;
-	}
-
-	return false;
-}
-
 std::optional<uint32_t> Shader::GetDescriptorLocation(const std::string &name) const {
-	if (auto it = m_descriptorLocations.find(name); it != m_descriptorLocations.end())
+	if (auto it = m_mapDescriptorNameToLocation.find(name); it != m_mapDescriptorNameToLocation.end())
 		return it->second;
 	return std::nullopt;
 }
 
-std::optional<uint32_t> Shader::GetDescriptorSize(const std::string &name) const {
-	if (auto it = m_descriptorSizes.find(name); it != m_descriptorSizes.end())
-		return it->second;
-	return std::nullopt;
+std::optional<VkDescriptorType> Shader::GetDescriptorType(const std::string &name) const {
+    if (auto it = m_mapNameToDescriptorType.find(name); it != m_mapNameToDescriptorType.end())
+        return it->second;
+    return std::nullopt;
 }
 
-std::optional<VkDescriptorType> Shader::GetDescriptorType(uint32_t location) const {
-	if (auto it = m_descriptorTypes.find(location); it != m_descriptorTypes.end())
-		return it->second;
-	return std::nullopt;
+std::optional<Shader::UniformBlock> Shader::GetUniformBlock(std::string_view name) const {
+    if (auto it = m_mapUniformBlock.find(name.data()); it != m_mapUniformBlock.end())
+        return it->second;
+    return std::nullopt;
 }
 
-std::optional<Shader::Uniform> Shader::GetUniform(const std::string &name) const {
-	if (auto it = m_uniforms.find(name); it != m_uniforms.end())
-		return it->second;
-	return std::nullopt;
-}
-
-std::optional<Shader::UniformBlock> Shader::GetUniformBlock(const std::string &name) const {
-	if (auto it = m_uniformBlocks.find(name); it != m_uniformBlocks.end())
-		return it->second;
-	return std::nullopt;
-}
-
-std::optional<Shader::Attribute> Shader::GetAttribute(const std::string &name) const {
-	if (auto it = m_attributes.find(name); it != m_attributes.end())
-		return it->second;
-	return std::nullopt;
+std::optional<Shader::Uniform> Shader::GetUniform(std::string_view name) const {
+    if (auto it = m_mapUniform.find(name.data()); it != m_mapUniform.end())
+        return it->second;
+    return std::nullopt;
 }
 
 VkFormat Shader::GlTypeToVk(int32_t type) {
@@ -325,8 +304,9 @@ void Shader::IncrementDescriptorPool(std::map<VkDescriptorType, uint32_t> &descr
 
 void Shader::loadUniformBlock(const glslang::TProgram &program, VkShaderStageFlags stageFlag, int32_t i) {
 	auto reflection = program.getUniformBlock(i);
+    const auto binding = reflection.getBinding();
 
-	for (auto &[uniformBlockName, uniformBlock] : m_uniformBlocks) {
+	for (auto &[uniformBlockName, uniformBlock] : m_mapUniformBlock) {
 		if (uniformBlockName == reflection.name) {
 			uniformBlock.stageFlags |= stageFlag;
 			return;
@@ -341,7 +321,7 @@ void Shader::loadUniformBlock(const glslang::TProgram &program, VkShaderStageFla
 	if (reflection.getType()->getQualifier().layoutPushConstant)
 		type = UniformBlock::Type::PushConstant;
 
-	m_uniformBlocks.emplace(reflection.name, UniformBlock(reflection.getBinding(), reflection.size, stageFlag, type));
+	m_mapUniformBlock.emplace(reflection.name, UniformBlock(reflection.getBinding(), reflection.size, stageFlag, type));
 }
 
 /**
@@ -358,16 +338,17 @@ void Shader::loadUniformBlock(const glslang::TProgram &program, VkShaderStageFla
  */
 void Shader::loadUniform(const glslang::TProgram &program, VkShaderStageFlags stageFlag, int32_t i) {
 	auto reflection = program.getUniform(i);
+    const auto binding = reflection.getBinding();
 
-	if (reflection.getBinding() == -1) {
+	if (binding == -1) {
 		auto splitName = String::Split(reflection.name, '.');
 
 		if (splitName.size() > 1) {
-			for (auto &[uniformBlockName, uniformBlock] : m_uniformBlocks) {
+			for (auto &[uniformBlockName, uniformBlock] : m_mapUniformBlock) {
 				if (uniformBlockName == splitName.at(0)) {
 					auto key = String::ReplaceFirst(reflection.name, splitName.at(0) + ".", "");
 					uniformBlock[key] = {
-						reflection.getBinding(),
+						binding,
 						reflection.offset,
 						ComputeSize(reflection.getType()),
 						reflection.glDefineType,
@@ -381,7 +362,7 @@ void Shader::loadUniform(const glslang::TProgram &program, VkShaderStageFlags st
 		}
 	}
 
-	for (auto &[uniformName, uniform] : m_uniforms) {
+	for (auto &[uniformName, uniform] : m_mapUniform) {
 		if (uniformName == reflection.name) {
 			uniform.stageFlags |= stageFlag;
 			return;
@@ -389,7 +370,7 @@ void Shader::loadUniform(const glslang::TProgram &program, VkShaderStageFlags st
 	}
 
 	auto &qualifier = reflection.getType()->getQualifier();
-	m_uniforms.emplace(reflection.name, Uniform(reflection.getBinding(), reflection.offset, -1, reflection.glDefineType, qualifier.readonly, qualifier.writeonly, stageFlag));
+	m_mapUniform.emplace(reflection.name, Uniform(binding, reflection.offset, -1, reflection.glDefineType, qualifier.readonly, qualifier.writeonly, stageFlag));
 }
 
 void Shader::loadAttribute(const glslang::TProgram &program, VkShaderStageFlags stageFlag, int32_t i) {
@@ -398,13 +379,13 @@ void Shader::loadAttribute(const glslang::TProgram &program, VkShaderStageFlags 
 	if (reflection.name.empty())
 		return;
 
-	for (const auto &[attributeName, attribute] : m_attributes) {
-		if (attributeName == reflection.name)
+	for (const auto &attribute: m_attributes | std::views::values) {
+		if (attribute.name == reflection.name)
 			return;
 	}
 
 	auto &qualifier = reflection.getType()->getQualifier();
-	m_attributes.emplace(reflection.name, Attribute(qualifier.layoutSet, qualifier.layoutLocation, ComputeSize(reflection.getType()), reflection.glDefineType));
+	m_attributes.emplace(qualifier.layoutLocation, Attribute(reflection.name, qualifier.layoutSet, qualifier.layoutLocation, ComputeSize(reflection.getType()), reflection.glDefineType));
 }
 
 int32_t Shader::ComputeSize(const glslang::TType *ttype) {
@@ -512,7 +493,7 @@ inline void Shader::createAndPushShaderModule(const std::vector<uint32_t> &spirv
 }
 
 void Shader::createDescriptorSetLayoutBindings() {
-	for (const auto &[name, block]: m_uniformBlocks) {
+	for (const auto &[name, block]: m_mapUniformBlock) {
 		auto type = gUniformTypeToVkType[TO_U32(block.type)];
 		m_vecDescriptorSetLayoutBinding.emplace_back(VkDescriptorSetLayoutBinding {
 			.binding = TO_U32(block.binding),
@@ -521,9 +502,10 @@ void Shader::createDescriptorSetLayoutBindings() {
 			.stageFlags = block.stageFlags
 		});
 		m_mapNameToDescriptorType[name] = type;
+        m_mapDescriptorNameToLocation[name] = block.binding;
 	}
 
-	for (const auto &[name, uniform]: m_uniforms) {
+	for (const auto &[name, uniform]: m_mapUniform) {
 		auto type = uniform.writeOnly ? VK_DESCRIPTOR_TYPE_STORAGE_IMAGE : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		m_vecDescriptorSetLayoutBinding.emplace_back(VkDescriptorSetLayoutBinding {
 			.binding = TO_U32(uniform.binding),
@@ -532,12 +514,12 @@ void Shader::createDescriptorSetLayoutBindings() {
 			.stageFlags = uniform.stageFlags
 		});
 		m_mapNameToDescriptorType[name] = type;
+        m_mapDescriptorNameToLocation[name] = uniform.binding;
 	}
 
 	std::sort(m_vecDescriptorSetLayoutBinding.begin(), m_vecDescriptorSetLayoutBinding.end(), [](const auto &lhs, const auto &rhs) {
 		return lhs.binding < rhs.binding;
 	});
-
 }
 
 void Shader::createVertexInputState() {
@@ -546,13 +528,13 @@ void Shader::createVertexInputState() {
 	uint32_t vertexOffset = 0;
 	uint32_t instanceOffset = 0;
 
-	for (const auto &[name, attr] : m_attributes) {
+    for (const auto &[location, attr] : m_attributes) {
 		VkVertexInputAttributeDescription attrDesc = {};
 		attrDesc.location = attr.location;
 		attrDesc.format = GlTypeToVk(attr.glType);
 
 		// 以 'i' 开头的是实例化数据
-		if (!name.empty() && name[0] == 'i') {
+		if (!attr.name.empty() && attr.name[0] == 'i') {
 			attrDesc.binding = 1;
 			attrDesc.offset = instanceOffset;
 			instanceAttrDescs.push_back(attrDesc);
@@ -593,13 +575,13 @@ void Shader::createVertexInputState() {
 	std::ranges::sort(m_vertexInputState.vecBindingDescription,
 		[](const VkVertexInputBindingDescription &lhs, const VkVertexInputBindingDescription &rhs) {
 			return lhs.binding < rhs.binding;
-		});
+    });
 }
 
 void Shader::createPushConstantRanges() {
 	uint32_t currentOffset = 0;
 
-	for (const auto &[name, block] : m_uniformBlocks) {
+	for (const auto &[name, block] : m_mapUniformBlock) {
 		if (block.type != UniformBlock::Type::PushConstant)
 			continue;
 

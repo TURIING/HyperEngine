@@ -31,27 +31,27 @@ private:
 class WriteDescriptorSet {
 public:
     WriteDescriptorSet(const VkWriteDescriptorSet &writeDescriptorSet, const VkDescriptorImageInfo &imageInfo)
-        :m_writeDescriptorSet(writeDescriptorSet), m_imageInfo(imageInfo) {
-        m_writeDescriptorSet.pImageInfo = &m_imageInfo;
+        :m_writeDescriptorSet(writeDescriptorSet), m_imageInfo(std::make_unique<VkDescriptorImageInfo>(imageInfo)) {
+        m_writeDescriptorSet.pImageInfo = m_imageInfo.get();
     }
 
     WriteDescriptorSet(const VkWriteDescriptorSet &writeDescriptorSet, const VkDescriptorBufferInfo &bufferInfo)
-        :m_writeDescriptorSet(writeDescriptorSet), m_bufferInfo(bufferInfo) {
-        m_writeDescriptorSet.pBufferInfo = &m_bufferInfo;
+        :m_writeDescriptorSet(writeDescriptorSet), m_bufferInfo(std::make_unique<VkDescriptorBufferInfo>(bufferInfo)) {
+        m_writeDescriptorSet.pBufferInfo = m_bufferInfo.get();
     }
 
 	NODISCARD const VkWriteDescriptorSet &GetWriteDescriptorSet() const { return m_writeDescriptorSet; }
 
 private:
     VkWriteDescriptorSet m_writeDescriptorSet{};
-    VkDescriptorImageInfo m_imageInfo{};
-    VkDescriptorBufferInfo m_bufferInfo{};
+    Unique<VkDescriptorImageInfo> m_imageInfo{};
+    Unique<VkDescriptorBufferInfo> m_bufferInfo{};
 };
 
 class Descriptor {
 public:
     virtual ~Descriptor() = default;
-    NODISCARD virtual WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType, const std::optional<OffsetSize> &offsetSize) const  = 0;
+    NODISCARD virtual WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType) const  = 0;
 };
 
 USING_ENGINE_NAMESPACE_END

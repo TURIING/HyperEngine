@@ -31,8 +31,8 @@ void Engine::Run() {
     LOG_ASSERT(m_pApp);
     m_pApp->Init();
 
-    m_elapsedRender.SetInterval(Time::Seconds(1.0f / 60.0f));
-    m_elapsedUpdate.SetInterval(Time::Seconds(1.0f / 60.0f));
+    m_elapsedRender.SetInterval(Time::Seconds(1.0f / 30.0f));
+    m_elapsedUpdate.SetInterval(Time::Seconds(1.0f / 30.0f));
 
     LOG_INFO("Engine running.");
 

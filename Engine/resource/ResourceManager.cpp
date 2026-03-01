@@ -11,7 +11,6 @@ ResourceManager::ResourceManager(): m_elapsedPurge(5s) {
 
 void ResourceManager::Update() {
     if (m_elapsedPurge.GetElapsed() != 0) {
-        LOG_INFO("ResourceManager check the resource lifecycle.");
         for (auto it = m_resourceMap.begin(); it != m_resourceMap.end(); ++it) {
             for (auto itInner = it->second.begin(); itInner != it->second.end(); ++itInner) {
                 if ((*itInner).second.use_count() <= 1) {

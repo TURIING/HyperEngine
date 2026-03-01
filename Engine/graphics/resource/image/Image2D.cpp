@@ -16,11 +16,6 @@ std::type_index Image2D::GetTypeIndex() const {
     return typeid(Image2D);
 }
 
-WriteDescriptorSet Image2D::GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType,
-    const std::optional<OffsetSize> &offsetSize) const {
-    return Image::GetWriteDescriptorSet(binding, descriptorType, offsetSize);
-}
-
 Share<Image2D> Image2D::Create(const Image2DCreateInfo &image2DInfo) {
     Unique<Bitmap> bitmap;
     Size2DUI size;

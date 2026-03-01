@@ -9,7 +9,7 @@
 
 USING_ENGINE_NAMESPACE_BEGIN
 
-PipelineLayout::PipelineLayout(Share<DescriptorSetLayout> descriptorSetLayout, const std::vector<VkPushConstantRange> &pushConstantRanges) {
+PipelineLayout::PipelineLayout(DescriptorSetLayout* descriptorSetLayout, const std::vector<VkPushConstantRange> &pushConstantRanges) {
     auto logicalDevice = Graphics::Get()->GetLogicDevice();
 
     VkPipelineLayoutCreateInfo createInfo = {};

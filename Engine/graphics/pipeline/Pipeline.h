@@ -11,6 +11,9 @@
 #include "Shader.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
+class PipelineLayout;
+class DescriptorSetLayout;
+
 struct GraphicPipelineState
 {
     VkPipelineLayout pipeLineLayout{};
@@ -66,14 +69,20 @@ public:
         }
     };
 
-    Pipeline() = default;
+    Pipeline(const std::vector<std::filesystem::path> &shaders, const std::optional<std::vector<Shader::Define>> &defines);
     ~Pipeline() override;
     NODISCARD VkPipelineBindPoint GetBindPoint() const;
+    NODISCARD const Shader* GetShader() const { return m_pShader.get(); }
+    NODISCARD const PipelineLayout* GetPipelineLayout() const { return m_pPipelineLayout.get(); }
+    NODISCARD const DescriptorSetLayout* GetDescriptorSetLayout() const { return m_pDescriptorSetLayout.get(); }
 
 protected:
-    void Create(const PipelineCreateInfo &info);
+    void create(const PipelineCreateInfo &info);
 
-private:
+protected:
+    Unique<Shader> m_pShader;
+    Unique<PipelineLayout> m_pPipelineLayout;
+    Unique<DescriptorSetLayout> m_pDescriptorSetLayout;
     PipelineType m_pipelineType;
 };
 

@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "../../common/Common.h"
-#include "../../common/Node.hpp"
-#include "../VulObject.h"
 
 namespace glslang {
     class TProgram;
@@ -106,16 +104,17 @@ public:
     };
 
     struct Attribute {
+        std::string name;
         int32_t location;
         int32_t size;
         int32_t glType;
         int32_t set;
 
-        Attribute(int32_t set = -1, int32_t location = -1, int32_t size = -1, int32_t glType = -1)
-            :location(location), size(size), glType(glType), set(set) {}
+        Attribute(std::string name, int32_t set = -1, int32_t location = -1, int32_t size = -1, int32_t glType = -1)
+            :location(location), size(size), glType(glType), set(set), name(std::move(name)) {}
 
         NODISCARD bool operator==(const Attribute &rhs) const {
-            return location == rhs.location && size == rhs.size && glType == rhs.glType && set == rhs.set;
+            return location == rhs.location && name == rhs.name && size == rhs.size && glType == rhs.glType && set == rhs.set;
         }
 
         NODISCARD bool operator!=(const Attribute &rhs) const {
@@ -141,27 +140,15 @@ public:
         }
     };
 
-    Shader(const std::vector<std::filesystem::path> &files, const std::vector<Shader::Define> &defines = {});
+    Shader(const std::vector<std::filesystem::path> &files, const std::optional<std::vector<Define>> &defines = std::nullopt);
     NODISCARD const PipelineVertexInputState &GetVertexInputState() const { return m_vertexInputState; }
     NODISCARD const std::vector<VkDescriptorSetLayoutBinding> &GetDescriptorSetLayoutBindings() const { return m_vecDescriptorSetLayoutBinding; }
     NODISCARD const std::vector<VkPushConstantRange> &GetPushConstantRanges() const { return m_vecPushConstantRanges; }
     NODISCARD const std::vector<VkPipelineShaderStageCreateInfo> &GetShaderStages() const { return m_vecShaderStages; }
-
-	NODISCARD VkShaderModule CreateShaderModule(const std::filesystem::path &moduleName, const std::string &moduleCode, const std::string &preamble, VkShaderStageFlags moduleFlag);
-    NODISCARD const std::filesystem::path &GetName() const { return m_stages.back(); }
-    NODISCARD uint32_t GetLastDescriptorBinding() const { return m_lastDescriptorBinding; }
-    NODISCARD const std::map<std::string, Uniform> &GetUniforms() const { return m_uniforms; };
-    NODISCARD const std::map<std::string, UniformBlock> &GetUniformBlocks() const { return m_uniformBlocks; };
-    NODISCARD const std::map<std::string, Attribute> &GetAttributes() const { return m_attributes; };
-    NODISCARD const std::map<std::string, Constant> &GetConstants() const { return m_constants; };
-    NODISCARD const std::array<std::optional<uint32_t>, 3> &GetLocalSizes() const { return m_localSizes; }
     NODISCARD std::optional<uint32_t> GetDescriptorLocation(const std::string &name) const;
-    NODISCARD std::optional<uint32_t> GetDescriptorSize(const std::string &name) const;
-	NODISCARD std::optional<VkDescriptorType> GetDescriptorType(uint32_t location) const;
-    NODISCARD std::optional<Uniform> GetUniform(const std::string &name) const;
-    NODISCARD std::optional<UniformBlock> GetUniformBlock(const std::string &name) const;
-    NODISCARD std::optional<Attribute> GetAttribute(const std::string &name) const;
-	NODISCARD bool ReportedNotFound(const std::string &name, bool reportIfFound) const;
+    NODISCARD std::optional<VkDescriptorType> GetDescriptorType(const std::string &name) const;
+    NODISCARD std::optional<UniformBlock> GetUniformBlock(std::string_view name) const;
+    NODISCARD std::optional<Uniform> GetUniform(std::string_view name) const;
     static VkFormat GlTypeToVk(int32_t type);
 
 private:
@@ -178,18 +165,17 @@ private:
 
 private:
     std::vector<std::filesystem::path> m_stages;
-    std::map<std::string, Uniform> m_uniforms;
-    std::map<std::string, UniformBlock> m_uniformBlocks;
-    std::map<std::string, Attribute> m_attributes;
+    std::map<std::string, Uniform> m_mapUniform;
+    std::map<std::string, UniformBlock> m_mapUniformBlock;
+    std::map<int32_t, Attribute> m_attributes;
     std::map<std::string, Constant> m_constants;
 
     std::array<std::optional<uint32_t>, 3> m_localSizes;
 
-    std::map<std::string, uint32_t> m_descriptorLocations;
+    std::map<std::string, uint32_t> m_mapDescriptorNameToLocation;
     std::map<std::string, uint32_t> m_descriptorSizes;
 
     uint32_t m_lastDescriptorBinding = 0;
-    std::map<uint32_t, VkDescriptorType> m_descriptorTypes;
 
     mutable std::vector<std::string> m_notFoundNames;
 

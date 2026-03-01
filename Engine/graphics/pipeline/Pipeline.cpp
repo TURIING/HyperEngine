@@ -4,9 +4,11 @@
 #include "Pipeline.h"
 #include "../Graphics.h"
 #include "../device/LogicDevice.h"
+#include "PipelineLayout.h"
+#include "../resource/descriptor/DescriptorSetLayout.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
-void Pipeline::Create(const PipelineCreateInfo &info) {
+void Pipeline::create(const PipelineCreateInfo &info) {
     auto pLogicDevice = Graphics::Get()->GetLogicDevice();
     m_pipelineType = info.type;
 
@@ -43,6 +45,12 @@ void Pipeline::Create(const PipelineCreateInfo &info) {
         CALL_VK(vkCreateComputePipelines(pLogicDevice->GetHandle(), VK_NULL_HANDLE, 1, &createInfo, nullptr, &m_pHandle));
         LOG_DEBUG("Compute Pipeline created");
     }
+}
+
+Pipeline::Pipeline(const std::vector<std::filesystem::path> &shaders, const std::optional<std::vector<Shader::Define>> &defines) {
+	m_pShader = std::make_unique<Shader>(shaders, defines);
+	m_pDescriptorSetLayout = std::make_unique<DescriptorSetLayout>(m_pShader->GetDescriptorSetLayoutBindings());
+	m_pPipelineLayout = std::make_unique<PipelineLayout>(m_pDescriptorSetLayout.get(), m_pShader->GetPushConstantRanges());
 }
 
 Pipeline::~Pipeline() {

@@ -9,15 +9,12 @@
 #include "Pipeline.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
-class Shader;
-class DescriptorSetLayout;
-class PipelineLayout;
 
 struct RenderEnvInfo: EnvInfo {
     DepthStencilInfo depthStencilInfo;
     RasterizationInfo rasterInfo{};
     MultiSampleInfo multiSampleInfo{};
-    std::vector<Shader::Define> defines = {};
+    std::optional<std::vector<Shader::Define>> defines = std::nullopt;
     Pipeline::Stage stage;
 };
 
@@ -28,9 +25,6 @@ public:
 
 private:
     Stage m_stage;
-    Share<Shader> m_pShader;
-    Share<DescriptorSetLayout> m_pDescriptorSetLayout;
-    Unique<PipelineLayout> m_pPipelineLayout;
 };
 
 USING_ENGINE_NAMESPACE_END

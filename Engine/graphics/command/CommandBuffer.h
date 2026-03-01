@@ -16,6 +16,7 @@ class Buffer;
 class Image2D;
 class Image;
 class Pipeline;
+class DescriptorSet;
 
 struct BeginRenderPassInfo {
     VkRenderPass renderPass;
@@ -32,6 +33,7 @@ public:
     void Reset() const;
     void Begin(bool single = false) const;
     void BeginRenderPass(const BeginRenderPassInfo &beginInfo);
+    void BindDescriptor(const Pipeline* pipeline, const DescriptorSet* pSet) const;
     void BindPipeline(const Pipeline *pipeline) const;
     void SetViewport(const Viewport &viewport) const;
     void SetScissor(const Scissor &scissor);

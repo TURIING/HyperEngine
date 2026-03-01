@@ -10,15 +10,13 @@
 #include "UniformBuffer.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
+class Pipeline;
 
 class UniformHandler {
 public:
-    explicit UniformHandler(bool multiPipeline = false);
-    explicit UniformHandler(const Shader::UniformBlock &uniformBlock, bool multiPipeline = false);
-
     template<typename T>
     void Push(const T &obj, std::size_t offset, std::size_t size) {
-        if (!m_uniformBlock || !m_uniformBuffer) return;
+        LOG_ASSERT(m_uniformBlock && m_uniformBuffer);
         if (!m_bound) {
             m_uniformBuffer->Map(&m_pData);
             m_bound = true;
@@ -42,18 +40,17 @@ public:
         Push(obj, uniform->size, realSize);
     }
 
-    bool Update(const std::optional<Shader::UniformBlock> &uniformBlock);
-
+    void BindUniformBlock(std::optional<Shader::UniformBlock> block);
+    void Update();
     NODISCARD UniformBuffer* GetUniformBuffer() const { return m_uniformBuffer.get(); }
 
 private:
-    bool m_multiPipeline = false;
     std::optional<Shader::UniformBlock> m_uniformBlock;
     uint32_t m_size = 0;
     void *m_pData = nullptr;
     bool m_bound = false;
-    std::unique_ptr<UniformBuffer> m_uniformBuffer;
-    Buffer::Status m_handlerStatus;
+    Unique<UniformBuffer> m_uniformBuffer;
+    Buffer::Status m_handlerStatus {};
 };
 
 USING_ENGINE_NAMESPACE_END

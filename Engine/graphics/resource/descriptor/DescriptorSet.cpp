@@ -6,23 +6,26 @@
 #include "../../pipeline/Pipeline.h"
 #include "../../Graphics.h"
 #include "../../device/LogicDevice.h"
+#include "../../pipeline/PipelineLayout.h"
+#include "DescriptorPool.h"
+#include "DescriptorSetLayout.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
-// DescriptorSet::DescriptorSet(Pipeline *pPipeline)
-    // :m_pipelineLayout(pPipeline->GetPipelineLayout()),
-    //  m_pipelineBindPoint(pPipeline->GetPipelineBindPoint()),
-    //  m_descriptorPool(pPipeline->GetDescriptorPool()) {
-//     auto logicalDevice = Graphics::Get()->GetLogicDevice();
-//
-//     VkDescriptorSetLayout layouts[1] = {pPipeline->GetDescriptorSetLayout()};
-//
-//     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
-//     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-//     descriptorSetAllocateInfo.descriptorPool = m_descriptorPool;
-//     descriptorSetAllocateInfo.descriptorSetCount = 1;
-//     descriptorSetAllocateInfo.pSetLayouts = layouts;
-//     CALL_VK(vkAllocateDescriptorSets(logicalDevice->GetHandle(), &descriptorSetAllocateInfo, &m_pHandle));
-// }
+    DescriptorSet::DescriptorSet(Pipeline *pPipeline)
+    :m_pipelineLayout(pPipeline->GetPipelineLayout()->GetHandle()),
+     m_pipelineBindPoint(pPipeline->GetBindPoint()),
+     m_descriptorPool(Graphics::Get()->GetDescriptorPool()->GetHandle()) {
+
+    auto logicalDevice = Graphics::Get()->GetLogicDevice();
+    const VkDescriptorSetLayout layouts[1] = { pPipeline->GetDescriptorSetLayout()->GetHandle() };
+
+    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptorSetAllocateInfo.descriptorPool = m_descriptorPool;
+    descriptorSetAllocateInfo.descriptorSetCount = 1;
+    descriptorSetAllocateInfo.pSetLayouts = layouts;
+    CALL_VK(vkAllocateDescriptorSets(logicalDevice->GetHandle(), &descriptorSetAllocateInfo, &m_pHandle));
+}
 
 DescriptorSet::~DescriptorSet() {
     auto logicalDevice = Graphics::Get()->GetLogicDevice();

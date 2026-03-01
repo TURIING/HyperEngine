@@ -10,9 +10,11 @@
 #include "../resource/image/Image.h"
 #include "../resource/buffer/Buffer.h"
 #include "../pipeline/Pipeline.h"
+#include "../pipeline/PipelineLayout.h"
+#include "../resource/descriptor/DescriptorSet.h"
 
 USING_ENGINE_NAMESPACE_BEGIN
-    struct LayoutTransition {
+struct LayoutTransition {
     VkAccessFlags srcAccessMask;
     VkAccessFlags dstAccessMask;
     VkPipelineStageFlags sourceStage;
@@ -107,6 +109,14 @@ void CommandBuffer::BeginRenderPass(const BeginRenderPassInfo &beginInfo) {
         .pClearValues = beginInfo.clearValues->data(),
     };
     vkCmdBeginRenderPass(m_pHandle, &info, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void CommandBuffer::BindDescriptor(const Pipeline *pipeline, const DescriptorSet *pSet) const {
+    const auto bindPoint = pipeline->GetBindPoint();
+    const auto layout = pipeline->GetPipelineLayout()->GetHandle();
+    const auto set = pSet->GetHandle();
+
+    vkCmdBindDescriptorSets(m_pHandle, bindPoint, layout, 0, 1, &set, 0, nullptr);
 }
 
 void CommandBuffer::BindPipeline(const Pipeline *pipeline) const {

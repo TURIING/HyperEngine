@@ -25,11 +25,7 @@ struct Image2DCreateInfo {
 class Image2D : public Resource, public Image {
     friend class SwapChain;
 public:
-    [[nodiscard]] std::type_index GetTypeIndex() const override;
-
-    [[nodiscard]] WriteDescriptorSet GetWriteDescriptorSet(uint32_t binding, VkDescriptorType descriptorType,
-        const std::optional<OffsetSize> &offsetSize) const override;
-
+    NODISCARD std::type_index GetTypeIndex() const override;
     static Share<Image2D> Create(const Image2DCreateInfo &image2DInfo);
 
 protected:

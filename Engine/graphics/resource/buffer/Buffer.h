@@ -17,7 +17,7 @@ class LogicDevice;
 class Buffer : public VulObject<VkBuffer> {
 public:
 	enum class Status { Reset, Changed, Normal };
-	 Buffer(VkDeviceSize size, VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT, VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    Buffer(VkDeviceSize size, VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT, VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	~Buffer() override;
 	NODISCARD uint64_t GetSize() const { return m_size; }
 	void WriteData(uint64_t offset, uint64_t size, const void* data) const;
